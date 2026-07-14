@@ -45,6 +45,7 @@ export type Action =
   | { type: 'REPAY_LOAN'; amount: number }
   | { type: 'PLATEIA_CHAT'; regularKey: string }
   | { type: 'BUY_LAIKI_DISCOUNT' }
+  | { type: 'PAY_TAX'; amount: number; yearKey: string }
   | { type: 'NEW_GAME'; onboarding?: boolean };
 
 export function apply(state: GameState, action: Action): GameState {
@@ -77,6 +78,8 @@ export function apply(state: GameState, action: Action): GameState {
       return plateiaChat(structuredClone(state), action.regularKey);
     case 'BUY_LAIKI_DISCOUNT':
       return buyLaikiDiscount(structuredClone(state));
+    case 'PAY_TAX':
+      return payTax(structuredClone(state), action.amount, action.yearKey);
     default:
       return state;
   }
@@ -372,6 +375,28 @@ function buyLaikiDiscount(draft: GameState): GameState {
   draft.money -= price;
   draft.ingredientDiscountActive = true;
   return draft;
+}
+
+/**
+ * Εφορία tax (§7.3): a one-time-per-year bill scaled to lifetimeEarnings. Deducts money with
+ * the same forced-loan safety net as the fixed costs; can push you into game over.
+ */
+function payTax(draft: GameState, amount: number, yearKey: string): GameState {
+  if (draft.flags[yearKey]) return draft; // already paid this year
+  draft.flags[yearKey] = true;
+  draft.money -= amount;
+  if (draft.money < 0) {
+    const shortfall = -draft.money;
+    draft.debt += shortfall * (1 + FORCED_LOAN_RATE);
+    draft.money = 0;
+  }
+  if (draft.debt > DEBT_CAP) draft.flags.gameOver = true;
+  return draft;
+}
+
+/** The Εφορία bill for the current lifetimeEarnings (10%, capped for sanity). */
+export function taxBill(lifetimeEarnings: number): number {
+  return Math.round(Math.min(lifetimeEarnings * 0.1, 3000));
 }
 
 /** λαϊκή discount price: €50 base, ±30% by month (dear in Δεκέμβριος, cheap in Σεπτέμβριος). */

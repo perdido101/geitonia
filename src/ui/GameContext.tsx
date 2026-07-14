@@ -8,9 +8,17 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
-import { apply, tick, createInitialState } from '../engine';
+import { apply, tick, createInitialState, ingredientCost } from '../engine';
 import type { Action, GameState, ShiftEvent } from '../engine';
 import { loadGame, saveGame } from '../save';
+
+export interface ShiftResult {
+  shopKey: string;
+  served: number;
+  failed: number;
+  gross: number;
+  ingredientCost: number;
+}
 
 // Visual effect emitted from engine ShiftEvents for the juice layer (§6.3).
 export interface VisualEffect {
@@ -27,6 +35,7 @@ interface GameContextValue {
   effects: VisualEffect[];
   clearEffect: (id: number) => void;
   shake: number; // increments to trigger a screen-shake
+  lastShift: ShiftResult | null;
 }
 
 const GameContext = createContext<GameContextValue | null>(null);
@@ -41,6 +50,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const [effects, setEffects] = useState<VisualEffect[]>([]);
   const [shake, setShake] = useState(0);
+  const [lastShift, setLastShift] = useState<ShiftResult | null>(null);
   const effectIdRef = useRef(0);
   const nowRef = useRef(0);
 
@@ -98,18 +108,31 @@ export function GameProvider({ children }: { children: ReactNode }) {
       acc += frame;
       let steps = 0;
       const collected: ShiftEvent[] = [];
+      let ended: ShiftResult | null = null;
       setState((s) => {
         let next = s;
         while (acc >= FIXED_DT && steps < 8) {
           acc -= FIXED_DT;
           steps += 1;
-          next = tick(next, FIXED_DT);
-          if (next.activeShift) collected.push(...next.activeShift.events);
-          if (!next.activeShift) break;
+          const before = next.activeShift;
+          const after = tick(next, FIXED_DT);
+          if (before && !after.activeShift) {
+            ended = {
+              shopKey: before.shopKey,
+              served: before.served,
+              failed: before.failed,
+              gross: before.grossEarned,
+              ingredientCost: ingredientCost(before.grossEarned, next.ingredientDiscountActive),
+            };
+          }
+          next = after;
+          if (after.activeShift) collected.push(...after.activeShift.events);
+          else break;
         }
         return next;
       });
       if (collected.length) emitEffects(collected);
+      if (ended) setLastShift(ended);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -122,8 +145,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const value = useMemo<GameContextValue>(
-    () => ({ state, dispatch, newGame, save, effects, clearEffect, shake }),
-    [state, dispatch, newGame, save, effects, clearEffect, shake],
+    () => ({ state, dispatch, newGame, save, effects, clearEffect, shake, lastShift }),
+    [state, dispatch, newGame, save, effects, clearEffect, shake, lastShift],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

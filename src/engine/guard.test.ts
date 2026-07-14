@@ -37,6 +37,7 @@ const EXPECTED_EXPORTS = [
   'repMultiplier',
   'shiftCurve',
   'spawnRate',
+  'taxBill',
   'tick',
   'tipMultiplierForRep',
 ].sort();

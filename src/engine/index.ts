@@ -16,7 +16,7 @@ export type {
 } from './types';
 
 export { tick } from './tick';
-export { apply, canUnlock, laikiPrice, SHIFT_DURATION, LAIKI_BASE_PRICE } from './actions';
+export { apply, canUnlock, laikiPrice, taxBill, SHIFT_DURATION, LAIKI_BASE_PRICE } from './actions';
 export type { Action } from './actions';
 export {
   createInitialState,
