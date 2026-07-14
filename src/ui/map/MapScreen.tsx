@@ -17,6 +17,7 @@ import { UpgradeScreen } from '../meta/UpgradeScreen';
 import { RosterScreen } from '../meta/RosterScreen';
 import { CalendarScreen } from '../meta/CalendarScreen';
 import { ShiftSummary } from '../meta/ShiftSummary';
+import { SettingsModal } from '../meta/SettingsModal';
 
 const SCALE = 0.46; // map units → screen px
 
@@ -26,6 +27,7 @@ type Overlay =
   | { kind: 'roster' }
   | { kind: 'calendar' }
   | { kind: 'summary' }
+  | { kind: 'settings' }
   | null;
 
 export function MapScreen() {
@@ -114,9 +116,10 @@ export function MapScreen() {
         <span>
           {t('common.day')} {state.day} · {names.month(month)}
         </span>
-        <span>
-          ★ {avgRep.toFixed(0)}
-        </span>
+        <span>★ {avgRep.toFixed(0)}</span>
+        <button onClick={() => setOverlay({ kind: 'settings' })} className="text-base leading-none active:scale-90">
+          ⚙
+        </button>
       </header>
 
       {/* Scrollable map viewport */}
@@ -178,6 +181,7 @@ export function MapScreen() {
       {overlay?.kind === 'roster' && <RosterScreen onClose={() => setOverlay(null)} />}
       {overlay?.kind === 'calendar' && <CalendarScreen onClose={() => setOverlay(null)} />}
       {overlay?.kind === 'summary' && <ShiftSummary onClose={() => setOverlay(null)} />}
+      {overlay?.kind === 'settings' && <SettingsModal onClose={() => setOverlay(null)} />}
     </div>
   );
 }

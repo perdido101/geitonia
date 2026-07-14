@@ -129,6 +129,31 @@ export function spawnCustomer(state: GameState): void {
 
   if (trySpawnRegular(state)) return;
 
+  // Onboarding Day 1 is forgiving: only Παππούς spawns (drain 0.03, nearly infinite patience).
+  if (state.flags.onboarding && state.day === 1) {
+    const pappous = ARCHETYPES.pappous;
+    const sizeRoll = randInt(pappous.orderSize[0], pappous.orderSize[1], state.rng);
+    state.rng = sizeRoll.next;
+    const shopA = state.shops[shift.shopKey];
+    const gen = generateOrder(shift.shopKey, sizeRoll.value, state.rng);
+    state.rng = gen.next;
+    shift.queue.push({
+      id: `c${shift.nextCustomerId}`,
+      archetypeKey: 'pappous',
+      regularKey: null,
+      order: gen.order,
+      patience: 1.0,
+      patienceDrainRate: pappous.patienceDrainRate,
+      basePayout: gen.basePayout,
+      tipMultiplier: tipMultiplierForRep(shopA.reputation),
+      state: 'waiting',
+      spawnedAt: shift.elapsed,
+    });
+    shift.nextCustomerId += 1;
+    shift.events.push({ kind: 'customer_arrive', customerId: `c${shift.nextCustomerId - 1}` });
+    return;
+  }
+
   const month = monthForDay(state.day);
   const pool = archetypePool(shift.shopKey, month);
   if (pool.keys.length === 0) return;

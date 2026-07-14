@@ -70,6 +70,17 @@ export function ShiftScreen() {
 
   const repColor = shop.reputation > 60 ? '#c8781e' : shop.reputation > 30 ? '#6b7a3a' : '#b5533a';
 
+  // Onboarding Day 1: a single contextual tip that follows the loop.
+  const onboarding = state.flags.onboarding && state.day === 1;
+  let tip: string | null = null;
+  if (onboarding) {
+    const briki = shop.stations.find((s) => s.typeKey === 'briki');
+    if (shift.heldItem) tip = t('tut.serve');
+    else if (briki?.state === 'ready') tip = t('tut.collect');
+    else if (briki?.state === 'working') tip = t('tut.wait');
+    else tip = t('tut.tapBriki');
+  }
+
   return (
     <div className={`relative flex h-full flex-col ${shake ? 'fx-shake' : ''} ${rush ? 'rush-glow' : ''}`} key={shake}>
       {/* HUD — 10% */}
@@ -116,6 +127,14 @@ export function ShiftScreen() {
       <div className="flex-1 overflow-y-auto">
         <StationGrid stations={shop.stations} speedTier={speedTier} onTapStation={onTapStation} />
       </div>
+
+      {tip && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-4">
+          <div className="rounded-full bg-aegean/95 px-4 py-2 text-center text-sm font-medium text-white shadow-lg">
+            {tip}
+          </div>
+        </div>
+      )}
 
       <EffectsLayer />
       {picker && <RecipePicker recipes={picker.recipes} onPick={onPick} onCancel={() => setPicker(null)} />}
