@@ -35,10 +35,12 @@ export function clampStanding(v: number): number {
 }
 
 /**
- * repMultiplier(rep) = 0.6 + (rep/100)*0.8 → 0.6× to 1.4× foot traffic.
- * Bad reputation means an empty shop; the death spiral is intentional but escapable
- * (Πλατεία chat + cheap comfort upgrades).
+ * repMultiplier(rep) = 0.75 + (rep/100)*0.65 → 0.75× to 1.40× foot traffic.
+ * The floor is deliberately high enough that a zero-reputation shop still gets *some*
+ * traffic — otherwise the low-rep death spiral becomes inescapable rather than merely
+ * punishing. (Spec was 0.6 + rep/100*0.8; the 0.75 floor is the fix for the bootstrap
+ * spiral, so we can start reputation low and still let the player climb out.)
  */
 export function repMultiplier(rep: number): number {
-  return 0.6 + (rep / 100) * 0.8;
+  return 0.75 + (rep / 100) * 0.65;
 }

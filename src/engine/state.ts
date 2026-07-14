@@ -7,10 +7,12 @@ import { REGULARS, REGULAR_KEYS } from '../data/customers';
 
 export const SCHEMA_VERSION = 1;
 export const STARTING_MONEY = 250;
-// Reputation starts mid-high (the spec's own example table shows rep ≈ 52 on day 1). This
-// makes the low-rep death-spiral an edge case rather than the default, and lets Κυρ-Θανάσης
-// (rep 30) notice you early — the game's first real reward.
-export const STARTING_KAFENEIO_REP = 40;
+// Reputation starts low so Κυρ-Θανάσης (threshold 30) is *earned*, not handed over at boot.
+// With the forgiving pappous-only Day-1 onboarding (+~11 rep) plus a couple of normal shifts,
+// the sim unlocks him around Day 4 — matching §9's scripted Day-3 intent — and staggers the
+// other Καφενείο Regulars across D9/D11/D12 instead of all by D6. The bootstrap death-spiral
+// this low start would otherwise cause is prevented by the raised repMultiplier floor (0.75).
+export const STARTING_KAFENEIO_REP = 12;
 export const DEFAULT_SEED = 1337;
 
 export function createShopRuntime(shopKey: string, day: number): ShopRuntime {

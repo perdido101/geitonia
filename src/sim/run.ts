@@ -113,6 +113,7 @@ function main() {
   // onboarding grace: no rent/ΕΦΚΑ until day 5 — the real game's bootstrap window.
   let state = createInitialState({ seed: 20260714, onboarding: true });
   const rows: DayRow[] = [];
+  const unlockDay: Record<string, number> = {};
 
   for (let day = 1; day <= 48; day++) {
     const shopKey = chooseShop(state, day);
@@ -138,6 +139,10 @@ function main() {
       rep: state.shops[shopKey].reputation,
     });
 
+    for (const key of Object.keys(state.regulars)) {
+      if (state.regulars[key].unlocked && unlockDay[key] == null) unlockDay[key] = day;
+    }
+
     if (state.flags.gameOver) {
       console.log(`\n💀 GAME OVER on day ${day} (debt €${Math.round(state.debt)})`);
       break;
@@ -145,6 +150,11 @@ function main() {
   }
 
   printTable(rows, state);
+  const unlockStr = Object.entries(unlockDay)
+    .sort((a, b) => a[1] - b[1])
+    .map(([k, d]) => `${k}@D${d}`)
+    .join('  ');
+  console.log(`Regular unlock days: ${unlockStr || '(none)'}`);
 }
 
 function printTable(rows: DayRow[], state: GameState) {
