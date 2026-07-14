@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+# Builds the Vite PWA and publishes it to GitHub Pages.
+# One-time setup: repo Settings → Pages → Build and deployment → Source = "GitHub Actions".
+
+on:
+  push:
+    branches: [main, claude/new-session-0u4968]
+  workflow_dispatch:
+
+# Least-privilege token that can publish Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deploy at a time; newer pushes cancel in-flight builds.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Guard the build: types, engine/data tests, then production bundle.
+      - run: npm test
+      - run: npm run build
+        env:
+          # Served from https://<user>.github.io/geitonia/ — assets need the subpath.
+          VITE_BASE: /geitonia/
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

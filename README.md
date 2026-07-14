@@ -20,6 +20,16 @@ Mobile-first portrait, offline-capable.
 | `npm test` | Run the test suite (Vitest) |
 | `npm run sim` | Headless year-long simulation (arrives in Phase 1) |
 
+## Deploy
+
+Pushing to `main` (or the active work branch) runs `.github/workflows/deploy.yml`, which
+typechecks, tests, builds with `VITE_BASE=/geitonia/`, and publishes to **GitHub Pages** →
+`https://perdido101.github.io/geitonia/`.
+
+One-time setup: repo **Settings → Pages → Source = "GitHub Actions"** (the workflow can't
+toggle this itself). No secrets required. To deploy to Vercel (the original spec target)
+instead, swap the publish step for the Vercel Action and add `VERCEL_TOKEN`.
+
 ## Ground rules (SPEC.md §2.1)
 
 1. **The engine is sacred.** After Phase 1, `src/engine/**` is byte-stable; it is pure
