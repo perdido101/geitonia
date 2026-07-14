@@ -32,10 +32,23 @@ Mobile-first portrait, offline-capable.
 
 ## Build status
 
-- **Phase 0 — Scaffold** ✅ boots, saves (versioned localStorage + migration stub),
-  speaks Greek by default (EL/EN toggle), and renders a labeled placeholder for any of
-  the 331 registered asset keys.
-- Phases 1–5 — not started.
+All phases are functionally complete — every system works, every number is wired, on
+placeholder art (§11 style-lock is the next pass, then Higgsfield fills `registry.ts`).
+
+- **Phase 0 — Scaffold** ✅ boot, versioned save + migration, Greek default, 331-key registry.
+- **Phase 1 — Engine** ✅ byte-stable pure `tick`/`apply`, guard snapshot, full §4.8 tests.
+- **Phase 1.5 — Sim** ✅ `npm run sim` — year-long bot run; used to rebalance the economy.
+- **Phase 2 — Data** ✅ shops/stations/recipes/customers/upgrades/dialogue/calendar/world,
+  `validate.test.ts` fails the build on any referential error.
+- **Phase 3 — Shift UI** ✅ HUD, patience queue, station grid, recipe picker, held item, juice.
+- **Phase 3.5 — Map** ✅ walkable neighborhood (BFS waypoint graph), camera, node interactions.
+- **Phase 4 — Meta** ✅ shift summary, upgrades, roster, calendar — all reached from the map.
+- **Phase 5 — Polish** ✅ title, settings, audio hooks, scripted Day-1 onboarding, game over.
+
+Balance note: several spec numbers were sim-tuned (base spawn rates ×~0.16, starting
+reputation, serve rep-gains) to make the year read as a game — climb → Regulars → August
+wall → survive. The spec-mandated fail penalties (−2 / −4) and ΕΦΚΑ (€150) are unchanged.
+Originals are noted in comments where changed.
 
 ## Folder structure
 
